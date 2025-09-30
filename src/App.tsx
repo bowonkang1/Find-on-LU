@@ -1,25 +1,45 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { LoginForm } from './components/auth/LoginForm';
+import { Layout } from './components/Dashboard';
+import { DashboardPage } from './pages/DashboardPage';
+import { LostFoundPage } from './pages/LostFoundPage';
+import { ThriftPage } from './pages/ThriftPage';
+
+interface User {
+  email: string;
+}
 
 function App() {
+  const [user, setUser] = useState<User | null>(null);
+
+  const handleLogin = (email: string) => {
+    setUser({ email });
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
+        <LoginForm onLogin={handleLogin} />
+      </div>
+    );
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Layout user={user} onLogout={handleLogout}>
+        <Routes>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/lost-found" element={<LostFoundPage />} />
+          <Route path="/thrift" element={<ThriftPage />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Layout>
+    </Router>
   );
 }
 
