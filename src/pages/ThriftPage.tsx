@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '../components/ui/Button';
 import { PostItemModal } from '../components/PostItemModal';
+import { ItemDetailsModal } from '../components/ItemDetailsModal';
 
 interface ThriftItem {
   id: number;
@@ -11,15 +12,17 @@ interface ThriftItem {
   poster: string;
   category: string;
   date: string;
-  image?: string;
+  image?: string; //optional property. Item can exist without an image
 }
 
 export function ThriftPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  //which category filter is currently selected
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<ThriftItem | null>(null); // keeps track of WHICH item the user clicked on.
 
-  const [items, setItems] = useState<ThriftItem[]>([
+  const [items, setItems] = useState<ThriftItem[]>([// array of thrift items~change
     {
       id: 1,
       title: 'Calculus Textbook',
@@ -43,25 +46,35 @@ export function ThriftPage() {
   ]);
 
   const categories = ['all', ...Array.from(new Set(items.map(item => item.category)))];
+  //.map() goes through and extracts just the color from each
+  // get all category names from items
+  // new set-> remove deuplicates
+  // convert to array
+  // add 'all' at the beginning
+  // List of unique categories for filter buttons
 
-  const handleItemPosted = (newItem: any) => {
+  const handleItemPosted = (newItem: any) => {//handle the event when an item is posted
+    //newItem-> formdata from  Modal
+    //accepts any type of data
     console.log('Received new thrift item:', newItem);
 
     let imageUrl: string | undefined = undefined;
-    if (newItem.image) {
-      imageUrl = URL.createObjectURL(newItem.image);
-    }
+    if (newItem.image) { //if user upload image
+      imageUrl = URL.createObjectURL(newItem.image); //convert file to URL
+    }//if no image, imageURL stays undefined
+    //runs when a user successfully posts a new item from the modal
 
+    //create proper item object-> displaying newly posted item on the page after user posts it
     const item = {
-      id: Date.now(),
+      id: Date.now(), //returns current time as a number
       title: newItem.title,
       description: newItem.description,
-      price: parseFloat(newItem.price) || 0,
+      price: parseFloat(newItem.price) || 0, //CHANGED: String → Number
       condition: newItem.condition,
-      poster: newItem.posterName,
+      poster: newItem.posterName, //CHANGED: posterName → poster
       category: newItem.category || 'Other',
       date: new Date().toISOString().split('T')[0],
-      image: imageUrl
+      image: imageUrl // CHANGED: File → URL
     };
     console.log('Adding thrift item to list:', item);
     setItems([item, ...items]);
@@ -116,7 +129,8 @@ export function ThriftPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredItems.map((item) => (
-          <div key={item.id} className="bg-white p-6 rounded-xl shadow-lg">
+          <div key={item.id}  className="bg-white p-6 rounded-xl shadow-lg cursor-pointer hover:shadow-2xl transition-shadow"
+          onClick={() => setSelectedItem(item)} >
             {item.image && (
             <img
             src={item.image}
@@ -163,6 +177,13 @@ window.open(outlookUrl, '_blank');
         type="thrift"
         onItemPosted={handleItemPosted}
       />
+
+      {selectedItem && (
+        <ItemDetailsModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
     </div>
   );
 }
