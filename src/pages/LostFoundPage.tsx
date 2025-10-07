@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "../components/ui/Button";
 import { PostItemModal } from "../components/PostItemModal";
+import { ItemDetailsModal } from '../components/ItemDetailsModal';
 
 interface LostFoundItem {
   id: number;
@@ -17,6 +18,7 @@ export function LostFoundPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "lost" | "found">("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null);
   const [items, setItems] = useState<LostFoundItem[]>([
     {
       id: 1,
@@ -133,7 +135,12 @@ export function LostFoundPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredItems.map((item) => (
-          <div key={item.id} className="bg-white p-6 rounded-xl shadow-lg">
+          <div 
+          key={item.id} 
+          className="bg-white p-6 rounded-xl shadow-lg cursor-pointer hover:shadow-2xl transition-shadow"
+          onClick={() => {console.log('Card clicked!', item);
+                          setSelectedItem(item);}}
+        >
            <div className="w-full h-48 bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
   {item.image ? (
     <img
@@ -197,6 +204,13 @@ export function LostFoundPage() {
         type="lost-found"
         onItemPosted={handleItemPosted}
       />
+      {selectedItem && (
+      <ItemDetailsModal 
+        item={selectedItem}
+        onClose={() => setSelectedItem(null)}
+      />
+)}
+
     </div>
   );
 }
