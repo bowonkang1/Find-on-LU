@@ -4,22 +4,23 @@ import { Input } from '../ui/Input';
 
 interface LoginFormProps {
   onLogin: (email: string) => void;
-}
+} //receives a function called onLogin from its parent component
 
 export function LoginForm({ onLogin }: LoginFormProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{email?: string, password?: string}>({});
+  const [email, setEmail] = useState(''); //Stores the current text in the email input fields(user input)
+  const [password, setPassword] = useState(''); //Stores the current text in the password input field(user input)
+  const [errors, setErrors] = useState<{email?: string, password?: string}>({}); //Stores validation error messages(not user input)
 
-  const validateForm = () => {
-    const newErrors: {email?: string, password?: string} = {};
-    
+  const validateForm = () => { //checks if inputs are valid
+    const newErrors: {email?: string, password?: string} = {}; //create an empty object, and the object have email and password poroperty
+
+    //if validation finds a problem
     if (!email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'Email is required'; //add error message
     } else if (!email.endsWith('@lawrence.edu')) {
       newErrors.email = 'Please use your LU email address';
     }
-    
+
     if (!password) {
       newErrors.password = 'Password is required';
     } else if (password.length < 6) {

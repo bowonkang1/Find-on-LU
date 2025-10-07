@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';//change the RL without refreshing the page
 import { Button } from './ui/Button';
 
+//receive and use ata from app.tsx
 interface LayoutProps {
   user: { email: string };
   onLogout: () => void;
