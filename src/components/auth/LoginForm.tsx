@@ -14,13 +14,14 @@ export function LoginForm({ onLogin }: LoginFormProps) {
   const validateForm = () => { //checks if inputs are valid
     const newErrors: {email?: string, password?: string} = {}; //create an empty object, and the object have email and password poroperty
 
-    //if validation finds a problem
+    //if validation finds a problem in email
     if (!email) {
       newErrors.email = 'Email is required'; //add error message
     } else if (!email.endsWith('@lawrence.edu')) {
       newErrors.email = 'Please use your LU email address';
     }
 
+    //if validaion finds a problem in password
     if (!password) {
       newErrors.password = 'Password is required';
     } else if (password.length < 6) {
@@ -28,13 +29,13 @@ export function LoginForm({ onLogin }: LoginFormProps) {
     }
     
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length === 0; //  
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); //stop page refresh
     
-    if (!validateForm()) return;
+    if (!validateForm()) return; //if validation fail(checks if the form is filled out correctly ), stop here 
     
     // Simple login - just pass the email
     onLogin(email);
@@ -52,7 +53,7 @@ export function LoginForm({ onLogin }: LoginFormProps) {
         <h1 className="text-2xl font-bold text-gray-900">Welcome to Find On LU</h1>
         <p className="text-gray-600 mt-2">Sign in to your account</p>
       </div>
-      
+ 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
@@ -69,7 +70,8 @@ export function LoginForm({ onLogin }: LoginFormProps) {
           type="password"
           placeholder="Enter your password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}// controlled component
+          //event handler that runs every time the user types in the password input field
           error={errors.password}
         />
         

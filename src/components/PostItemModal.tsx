@@ -3,13 +3,19 @@ import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 
 interface PostItemModalProps {
-    isOpen: boolean;
+    isOpen: boolean; //for optional showing modal
     onClose: () => void;
     type: 'lost-found' | 'thrift';
     onItemPosted?: (newItem: any) => void;
   }
+  //
 
 export function PostItemModal({ isOpen, onClose, type, onItemPosted }: PostItemModalProps) {
+  // is Open =true -> Modal shows
+  // type = "thrift" → Shows price/condition fields
+  // Has onClose function to close itself
+  // Has onItemPosted function to send data back
+
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -18,7 +24,7 @@ export function PostItemModal({ isOpen, onClose, type, onItemPosted }: PostItemM
     category: '',
     price: '',
     condition: '',
-    itemType: 'lost', // for lost-found only
+    itemType: 'lost', // for lost-found only(what page I'm on-lost page)
     posterName: '',
     posterEmail: '',
     image: null as File | null
@@ -154,7 +160,7 @@ export function PostItemModal({ isOpen, onClose, type, onItemPosted }: PostItemM
               onChange={(e) => {
                 const file = e.target.files?.[0] || null;
                 setFormData({...formData, image: file});
-              }}
+              }}//
               className="hidden"
             />
           </label>

@@ -17,10 +17,10 @@ interface ThriftItem {
 
 export function ThriftPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
   //which category filter is currently selected
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ThriftItem | null>(null); // keeps track of WHICH item the user clicked on.
+
 
   const [items, setItems] = useState<ThriftItem[]>([// array of thrift items~change
     {
@@ -45,10 +45,10 @@ export function ThriftPage() {
     }
   ]);
 
-  const categories = ['all', ...Array.from(new Set(items.map(item => item.category)))];
+
   //.map() goes through and extracts just the color from each
   // get all category names from items
-  // new set-> remove deuplicates
+  // new set-> remove duplicates
   // convert to array
   // add 'all' at the beginning
   // List of unique categories for filter buttons
@@ -83,8 +83,7 @@ export function ThriftPage() {
   const filteredItems = items.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === 'all' || item.category === filterCategory;
-    return matchesSearch && matchesCategory;
+    return matchesSearch;  // Only search, no category filter
   });
 
   return (
@@ -111,18 +110,6 @@ export function ThriftPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lu-blue-500"
             />
-          </div>
-          <div className="flex gap-2">
-            {categories.map(category => (
-              <Button
-                key={category}
-                variant={filterCategory === category ? 'primary' : 'outline'}
-                onClick={() => setFilterCategory(category)}
-                size="sm"
-              >
-                {category === 'all' ? 'All Items' : category}
-              </Button>
-            ))}
           </div>
         </div>
       </div>

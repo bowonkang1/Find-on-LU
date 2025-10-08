@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';//change the RL without refreshing the page
 import { Button } from './ui/Button';
 
-//receive and use ata from app.tsx
+//receive and use data from app.tsx
 interface LayoutProps {
   user: { email: string };
   onLogout: () => void;
@@ -52,7 +52,7 @@ export function Layout({ user, onLogout, children }: LayoutProps) {
             </div>
             
             <div className="flex items-center space-x-4">
-              <span className="text-gray-700">Welcome, {user.email.split('@')[0]}!</span>
+              <span className="text-gray-700">Welcome, {user.email.split('@')[0]}!</span> 
               <Button variant="outline" size="sm" onClick={onLogout}>
                 Sign Out
               </Button>
