@@ -21,6 +21,15 @@ export function ThriftPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ThriftItem | null>(null); // keeps track of WHICH item the user clicked on.
 
+  //for adding new badge
+  const isNewItem = (dateString: string) => {
+    const postDate = new Date(dateString);
+    const now = new Date();
+    const hoursDiff = (now.getTime() - postDate.getTime()) / (1000 * 60 * 60);
+    return hoursDiff < 24;
+  };
+  
+
   const [items, setItems] = useState<ThriftItem[]>([
     // array of thrift items~change
     {
@@ -124,6 +133,12 @@ export function ThriftPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lu-blue-500"
             />
+             {/*for showing the number of results*/}
+             {searchTerm && (
+              <p className="text-sm text-gray-600 mt-2">
+                Found {filteredItems.length} items
+              </p>
+            )}
           </div>
         </div>
       </div>
