@@ -62,7 +62,8 @@ export function Layout({ user, onLogout, children }: LayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main>{children}</main>
+      <main className="bg-sky-50 min-h-screen py-6 sm:px-6 lg:px-8">
+        {children}</main>
     </div>
   );
 }

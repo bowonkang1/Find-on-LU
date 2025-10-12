@@ -6,9 +6,17 @@ export function DashboardPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
+      <img 
+          src="/logo-lawrence.png" 
+          alt="Lawrence University Logo" 
+          className="h-32 w-auto mx-auto mb-4"
+        />
+
+        
         <h2 className="text-3xl font-bold text-gray-900 mb-4">
           Welcome to Find On LU
         </h2>
+        
         <p className="text-lg text-gray-600">
           Your campus lost & found and marketplace platform
         </p>
