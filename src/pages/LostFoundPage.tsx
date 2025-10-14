@@ -1,17 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../components/ui/Button";
 import { PostItemModal } from "../components/PostItemModal";
 import { ItemDetailsModal } from "../components/ItemDetailsModal";
+import { getLostFoundItems } from '../lib/supabaseService';
 
 interface LostFoundItem {
-  id: number;
+  id: string;
   type: "lost" | "found";
   title: string;
   description: string;
   location: string;
+  user_email: string;
+  created_at: string;
+  image_url?: string;
   date: string;
-  poster: string;
-  image?: string;
+  user_id: string; 
+  status: string;
 }
 
 export function LostFoundPage() {
@@ -19,49 +23,41 @@ export function LostFoundPage() {
   const [filterType, setFilterType] = useState<"all" | "lost" | "found">("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null);
-  const [items, setItems] = useState<LostFoundItem[]>([
-    {
-      id: 1,
-      type: "lost",
-      title: "iPhone 13 Pro",
-      description: "Black iPhone 13 Pro, lost in the library",
-      location: "Library 2nd floor",
-      date: "2024-01-15",
-      poster: "John Doe",
-    },
-    {
-      id: 2,
-      type: "found",
-      title: "Blue Water Bottle",
-      description: "Found blue Hydro Flask near the gym",
-      location: "Gym entrance",
-      date: "2024-01-14",
-      poster: "Jane Smith",
-    },
-  ]);
+  const [items, setItems] = useState<LostFoundItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const handleItemPosted = (newItem: any) => {
-    console.log("Received new item:", newItem);
+  //Fetch items from supabase when page loads
+  useEffect(()=> {
+    loadItems();
+  },[])
 
-    // Convert image file to URL for display
-    let imageUrl: string | undefined = undefined;
-    if (newItem.image) {
-      imageUrl = URL.createObjectURL(newItem.image);
+  async function loadItems(){
+    try{
+      console.log('🔄 Loading items from Supabase...');
+      setLoading(true);
+      const data = await getLostFoundItems();
+      console.log('📦 Received from Supabase:', data);
+      console.log('📊 Item count:', data?.length);
+
+
+
+      setItems(data || []);
+      setError('');
+    }catch (err: any) {
+      console.error('Error loading items:', err);
+      setError('Failed to load items. Please try again.');
+    } finally {
+      setLoading(false);
     }
+  }
 
-    const item = {
-      id: Date.now(), // Simple ID generation
-      type: newItem.itemType,
-      title: newItem.title,
-      description: newItem.description,
-      location: newItem.location,
-      date: new Date().toISOString().split("T")[0], // Today's date
-      poster: newItem.posterName,
-      image: imageUrl,
-    };
-    console.log("Adding item to list:", item);
-    setItems([item, ...items]); // Add new item to the beginning
+  const handleItemPosted = async (newItem: any) => {
+   // After posting, reload items from database
+   console.log('handleItemPosted called!', newItem);
+   await loadItems();
   };
+
 
   const filteredItems = items.filter((item) => {
     const matchesSearch =
@@ -70,6 +66,32 @@ export function LostFoundPage() {
     const matchesFilter = filterType === "all" || item.type === filterType;
     return matchesSearch && matchesFilter;
   });
+
+   // Show loading state
+   if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lu-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading items...</p>
+        </div>
+      </div>
+    );
+  }
+
+   // Show error state
+   if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-red-100 text-red-700 p-4 rounded-lg">
+          <p className="font-semibold">Error</p>
+          <p>{error}</p>
+          <Button onClick={loadItems} className="mt-4">Try Again</Button>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     //header
@@ -108,7 +130,7 @@ export function LostFoundPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lu-blue-500"
             />
-            {/*for showing the number of results*/}
+             /*for showing the number of results*/
             {searchTerm && (
               <p className="text-sm text-gray-600 mt-2">
                 Found {filteredItems.length} items
@@ -152,9 +174,9 @@ export function LostFoundPage() {
             }}
           >
             <div className="w-full h-48 bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-              {item.image ? (
+              {item.image_url ?  (
                 <img
-                  src={item.image}
+                  src={item.image_url}
                   alt={item.title}
                   className="w-full h-full object-cover"
                 />
@@ -187,7 +209,7 @@ export function LostFoundPage() {
               >
                 {item.type.toUpperCase()}
               </span>
-              <span className="text-sm text-gray-500">{item.date}</span>
+              <span className="text-sm text-gray-500">{new Date(item.date).toLocaleDateString()}</span>
             </div>
 
             <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
@@ -195,18 +217,20 @@ export function LostFoundPage() {
 
             <div className="text-sm text-gray-500 mb-4">
               <div>Location: {item.location}</div>
-              <div>Posted by: {item.poster}</div>
+              <div>Posted by: {item.user_email.split('@')[0]}</div>
             </div>
 
             <Button
               size="sm"
               className="w-full"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent card click when clicking button
+                const posterName = item.user_email.split('@')[0];
                 const subject = `Found your ${item.type} item: ${item.title}`;
-                const body = `Hi ${item.poster},\n\nI saw your ${item.type} item posting for "${item.title}" on Find On LU.\n\n${item.description}\n\nLocation: ${item.location}\n\nPlease let me know if this is still available.\n\nThanks!`;
+                const body = `Hi ${posterName},\n\nI saw your ${item.type} item posting for "${item.title}" on Find On LU.\n\n${item.description}\n\nLocation: ${item.location}\n\nPlease let me know if this is still available.\n\nThanks!`;
                 const outlookUrl = `https://outlook.office365.com/mail/deeplink/compose?to=${
-                  item.poster
-                }@lawrence.edu&subject=${encodeURIComponent(
+                  item.user_email
+                }&subject=${encodeURIComponent(
                   subject
                 )}&body=${encodeURIComponent(body)}`;
                 window.open(outlookUrl, "_blank");

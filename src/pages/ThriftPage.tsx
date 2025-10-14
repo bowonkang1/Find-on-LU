@@ -1,101 +1,88 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../components/ui/Button";
 import { PostItemModal } from "../components/PostItemModal";
 import { ItemDetailsModal } from "../components/ItemDetailsModal";
+import { getThriftItems } from '../lib/supabaseService';
 
 interface ThriftItem {
-  id: number;
+  id: string; // uuid in Supabase
   title: string;
   description: string;
   price: number;
-  condition: string;
-  poster: string;
-  category: string;
-  date: string;
-  image?: string; //optional property. Item can exist without an image
+  category?: string;
+  condition?: string;
+  image_url?: string;
+  user_email: string;
+  created_at: string;
+  status: string; // default 'available' in Supabase
+  user_id: string; // uuid in Supabase
 }
 
 export function ThriftPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  //which category filter is currently selected
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<ThriftItem | null>(null); // keeps track of WHICH item the user clicked on.
+  const [selectedItem, setSelectedItem] = useState<ThriftItem | null>(null);
+  const [items, setItems] = useState<ThriftItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  //for adding new badge
-  const isNewItem = (dateString: string) => {
-    const postDate = new Date(dateString);
-    const now = new Date();
-    const hoursDiff = (now.getTime() - postDate.getTime()) / (1000 * 60 * 60);
-    return hoursDiff < 24;
-  };
-  
+  // Fetch items from Supabase when page loads
+  useEffect(() => {
+    loadItems();
+  }, []);
 
-  const [items, setItems] = useState<ThriftItem[]>([
-    // array of thrift items~change
-    {
-      id: 1,
-      title: "Calculus Textbook",
-      description: "Stewart Calculus 8th Edition, barely used",
-      price: 45,
-      condition: "Like New",
-      poster: "Mike Johnson",
-      category: "Textbooks",
-      date: "2024-01-15",
-    },
-    {
-      id: 2,
-      title: "Gaming Chair",
-      description: "Comfortable gaming chair, minor wear",
-      price: 120,
-      condition: "Good",
-      poster: "Sarah Wilson",
-      category: "Furniture",
-      date: "2024-01-14",
-    },
-  ]);
+  async function loadItems() {
+    try {
+      setLoading(true);
+      const data = await getThriftItems();
+      setItems(data || []);
+      setError('');
+    } catch (err: any) {
+      console.error('Error loading items:', err);
+      setError('Failed to load items. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  //.map() goes through and extracts just the color from each
-  // get all category names from items
-  // new set-> remove duplicates
-  // convert to array
-  // add 'all' at the beginning
-  // List of unique categories for filter buttons
-
-  const handleItemPosted = (newItem: any) => {
-    //handle the event when an item is posted
-    //newItem-> formdata from  Modal
-    //accepts any type of data
-    console.log("Received new thrift item:", newItem);
-
-    let imageUrl: string | undefined = undefined;
-    if (newItem.image) {
-      //if user upload image
-      imageUrl = URL.createObjectURL(newItem.image); //convert file to URL
-    } //if no image, imageURL stays undefined
-    //runs when a user successfully posts a new item from the modal
-
-    //create proper item object-> displaying newly posted item on the page after user posts it
-    const item = {
-      id: Date.now(), //returns current time as a number
-      title: newItem.title,
-      description: newItem.description,
-      price: parseFloat(newItem.price) || 0, //CHANGED: String → Number
-      condition: newItem.condition,
-      poster: newItem.posterName, //CHANGED: posterName → poster
-      category: newItem.category || "Other",
-      date: new Date().toISOString().split("T")[0],
-      image: imageUrl, // CHANGED: File → URL
-    };
-    console.log("Adding thrift item to list:", item);
-    setItems([item, ...items]);
+  const handleItemPosted = async (newItem: any) => {
+    // After posting, reload items from database
+    await loadItems();
   };
 
   const filteredItems = items.filter((item) => {
     const matchesSearch =
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch; // Only search, no category filter
+    const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
+    return matchesSearch && matchesCategory;
   });
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lu-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading items...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-red-100 text-red-700 p-4 rounded-lg">
+          <p className="font-semibold">Error</p>
+          <p>{error}</p>
+          <Button onClick={loadItems} className="mt-4">Try Again</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -103,13 +90,12 @@ export function ThriftPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Thrift Store</h1>
           <p className="text-gray-600 mt-2">
-            Buy and sell items with fellow students
+            Buy and sell pre-loved items
           </p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>Sell Item</Button>
+        <Button onClick={() => setIsModalOpen(true)}>Post Item</Button>
       </div>
 
-      {/* Search Section */}
       <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
@@ -128,17 +114,53 @@ export function ThriftPage() {
             </svg>
             <input
               type="text"
-              placeholder="Search items for sale..."
+              placeholder="Search items..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lu-blue-500"
             />
-             {/*for showing the number of results*/}
-             {searchTerm && (
+            {searchTerm && (
               <p className="text-sm text-gray-600 mt-2">
                 Found {filteredItems.length} items
               </p>
             )}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant={selectedCategory === "all" ? "primary" : "outline"}
+              onClick={() => setSelectedCategory("all")}
+              size="sm"
+            >
+              All
+            </Button>
+            <Button
+              variant={selectedCategory === "Electronics" ? "primary" : "outline"}
+              onClick={() => setSelectedCategory("Electronics")}
+              size="sm"
+            >
+              Electronics
+            </Button>
+            <Button
+              variant={selectedCategory === "Clothing" ? "primary" : "outline"}
+              onClick={() => setSelectedCategory("Clothing")}
+              size="sm"
+            >
+              Clothing
+            </Button>
+            <Button
+              variant={selectedCategory === "Books" ? "primary" : "outline"}
+              onClick={() => setSelectedCategory("Books")}
+              size="sm"
+            >
+              Books
+            </Button>
+            <Button
+              variant={selectedCategory === "Furniture" ? "primary" : "outline"}
+              onClick={() => setSelectedCategory("Furniture")}
+              size="sm"
+            >
+              Furniture
+            </Button>
           </div>
         </div>
       </div>
@@ -150,39 +172,57 @@ export function ThriftPage() {
             className="bg-white p-6 rounded-xl shadow-lg cursor-pointer hover:shadow-2xl transition-shadow"
             onClick={() => setSelectedItem(item)}
           >
-            {item.image && (
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-full h-48 object-cover rounded-lg mb-4"
-              />
-            )}
-            <div className="flex items-center justify-between mb-3">
-              <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
-                {item.category}
-              </span>
-              <span className="text-lg font-bold text-green-600">
-                ${item.price}
-              </span>
+            <div className="w-full h-48 bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+              {item.image_url ? (
+                <img
+                  src={item.image_url}
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="text-center text-gray-400">
+                  <svg
+                    className="mx-auto h-12 w-12 mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <p className="text-sm">No photo</p>
+                </div>
+              )}
             </div>
 
             <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
-            <p className="text-gray-600 text-sm mb-3">{item.description}</p>
+            <p className="text-2xl font-bold text-green-600 mb-2">${item.price}</p>
+            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
+
+            <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
+              {item.condition && <span>{item.condition}</span>}
+              {item.category && <span>{item.category}</span>}
+            </div>
 
             <div className="text-sm text-gray-500 mb-4">
-              <div>Condition: {item.condition}</div>
-              <div>Seller: {item.poster}</div>
+              <div>Posted by: {item.user_email.split('@')[0]}</div>
             </div>
 
             <Button
               size="sm"
               className="w-full"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
+                const posterName = item.user_email.split('@')[0];
                 const subject = `Interested in: ${item.title}`;
-                const body = `Hi ${item.poster},\n\nI'm interested in your item "${item.title}" listed for $${item.price} on Find On LU.\n\n${item.description}\n\nCondition: ${item.condition}\n\nIs this still available?\n\nThanks!`;
+                const body = `Hi ${posterName},\n\nI'm interested in your item "${item.title}" listed for $${item.price}.\n\nIs this still available?\n\nThanks!`;
                 const outlookUrl = `https://outlook.office365.com/mail/deeplink/compose?to=${
-                  item.poster
-                }@lawrence.edu&subject=${encodeURIComponent(
+                  item.user_email
+                }&subject=${encodeURIComponent(
                   subject
                 )}&body=${encodeURIComponent(body)}`;
                 window.open(outlookUrl, "_blank");
@@ -194,8 +234,7 @@ export function ThriftPage() {
         ))}
       </div>
 
-      
-      {filteredItems.length === 0 && ( // empty state
+      {filteredItems.length === 0 && (
         <div className="text-center py-16">
           <div className="text-6xl mb-4">🔍</div>
           <h3 className="text-xl font-semibold text-gray-700 mb-2">
@@ -215,7 +254,6 @@ export function ThriftPage() {
         type="thrift"
         onItemPosted={handleItemPosted}
       />
-
       {selectedItem && (
         <ItemDetailsModal
           item={selectedItem}

@@ -50,7 +50,7 @@ export function Layout({ user, onLogout, children }: LayoutProps) {
                 ))}
               </nav>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <span className="text-gray-700">Welcome, {user.email.split('@')[0]}!</span> 
               <Button variant="outline" size="sm" onClick={onLogout}>

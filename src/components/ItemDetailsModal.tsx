@@ -3,12 +3,12 @@ import { Button } from "./ui/Button";
 
 interface ItemDetailsModalProps {
   item: {
-    id: number;
+    id: string;
     title: string;
     description: string;
-    poster: string;
-    date: string;
-    image?: string;
+    user_email: string;
+    created_at: string;
+    image_url?: string;
     // Thrift-specific (optional)
     price?: number;
     condition?: string;
@@ -16,10 +16,19 @@ interface ItemDetailsModalProps {
     // Lost&Found-specific (optional)
     type?: 'lost' | 'found';
     location?: string;
+    date?: string; 
   };
   onClose: () => void;
 }
 export function ItemDetailsModal({ item, onClose }: ItemDetailsModalProps) {
+     // Get poster name from email
+  const posterName = item.user_email.split('@')[0];
+
+   // Format date - use 'date' if it exists (Lost&Found), otherwise use created_at
+   const displayDate = item.date
+   ? new Date(item.date).toLocaleDateString()
+   : new Date(item.created_at).toLocaleDateString();
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
@@ -44,9 +53,9 @@ export function ItemDetailsModal({ item, onClose }: ItemDetailsModalProps) {
         </button>
 
         {/* Image */}
-        {item.image && (
+        {item.image_url && (
           <img
-            src={item.image}
+            src={item.image_url}
             alt={item.title}
             className="w-full h-64 object-cover rounded-lg mb-4"
           />
@@ -55,8 +64,8 @@ export function ItemDetailsModal({ item, onClose }: ItemDetailsModalProps) {
         {/* Title and Price */}
         <h2 className="text-2xl font-bold mb-2">{item.title}</h2>
         {item.price !== undefined && (
-  <p className="text-3xl font-bold text-green-600 mb-4">${item.price}</p>
-)}
+            <p className="text-3xl font-bold text-green-600 mb-4">${item.price}</p>
+        )}
 
         {/* Full Description */}
         <div className="mb-4">
@@ -64,7 +73,6 @@ export function ItemDetailsModal({ item, onClose }: ItemDetailsModalProps) {
           <p className="text-gray-600">{item.description}</p>
         </div>
 
-        {/* Details */}
         {/* Details */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           {/* Show condition if it exists (Thrift items) */}
@@ -112,13 +120,17 @@ export function ItemDetailsModal({ item, onClose }: ItemDetailsModalProps) {
           {/* Always show date and seller */}
           <div>
             <p className="text-sm text-gray-500">Posted</p>
-            <p className="font-medium">{item.date}</p>
+            <p className="font-medium">{displayDate}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500">Posted</p>
+            <p className="font-medium">{displayDate}</p>
+          </div>
+          <div>
+             <p className="text-sm text-gray-500">
               {item.price !== undefined ? "Seller" : "Posted by"}
             </p>
-            <p className="font-medium">{item.poster}</p>
+            <p className="font-medium">{posterName}</p>
           </div>
         </div>
 
@@ -126,17 +138,23 @@ export function ItemDetailsModal({ item, onClose }: ItemDetailsModalProps) {
         <Button
           className="w-full"
           onClick={() => {
-            const subject = `Interested in: ${item.title}`;
-            const body = `Hi ${item.poster},\n\nI'm interested in your item "${item.title}" listed for $${item.price}.\n\nIs this still available?\n\nThanks!`;
+            const subject = item.type 
+            ? `About your ${item.type} item: ${item.title}`
+            : `Interested in: ${item.title}`;
+
+            const body = item.price
+              ? `Hi ${posterName},\n\nI'm interested in your item "${item.title}" listed for $${item.price}.\n\nIs this still available?\n\nThanks!`
+              : `Hi ${posterName},\n\nI saw your ${item.type} item posting for "${item.title}" on Find On LU.\n\n${item.description}\n\nLocation: ${item.location}\n\nPlease let me know if this is still available.\n\nThanks!`;
+
             const outlookUrl = `https://outlook.office365.com/mail/deeplink/compose?to=${
-              item.poster
-            }@lawrence.edu&subject=${encodeURIComponent(
+              item.user_email
+            }&subject=${encodeURIComponent(
               subject
             )}&body=${encodeURIComponent(body)}`;
             window.open(outlookUrl, "_blank");
           }}
         >
-          Contact Seller
+          Contact {item.price !== undefined ? "Seller" : "Poster"}
         </Button>
       </div>
     </div>

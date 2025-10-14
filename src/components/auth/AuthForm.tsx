@@ -7,6 +7,7 @@ const SCHOOL_DOMAIN = '@lawrence.edu';
 
 export function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
+  //True->sign in, False->Sign up
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
