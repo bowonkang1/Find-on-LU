@@ -57,7 +57,7 @@ export function ItemDetailsModal({ item, onClose }: ItemDetailsModalProps) {
           <img
             src={item.image_url}
             alt={item.title}
-            className="w-full h-64 object-cover rounded-lg mb-4"
+            className="w-full h-67 object-cover rounded-lg mb-4"
           />
         )}
 

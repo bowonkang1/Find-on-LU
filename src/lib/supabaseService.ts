@@ -32,7 +32,12 @@ export async function createThriftItem(item: {
     .from('thrift_items')
     .insert([
       {
-        ...item,
+        title: item.title,
+        description: item.description,
+        price: item.price,
+        category: item.category,
+        condition: item.condition,
+        image_url: item.image_url,
         user_id: user.id,
         user_email: user.email,
         status: 'active'
@@ -109,7 +114,12 @@ export async function createLostFoundItem(item: {
     .from('lost_found_items')
     .insert([
       {
-        ...item,
+        title: item.title,
+        description: item.description,
+        type: item.type,
+        location: item.location,
+        date: item.date,
+        image_url: item.image_url,
         user_id: user.id,
         user_email: user.email,
         status: 'active'
@@ -154,5 +164,43 @@ export async function deleteLostFoundItem(id: string) {
   if (error) {
     console.error('Error deleting lost/found item:', error);
     throw error;
+  }
+}
+
+// ==================== IMAGE UPLOAD ====================
+
+export async function uploadItemImage(file: File): Promise<string | null> {
+  try {
+    // Create unique filename
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('item-images')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) {
+      console.error('❌ Upload error:', error);
+      throw error;
+    }
+
+    console.log('✅ Upload successful:', data);
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('item-images')
+      .getPublicUrl(filePath);
+
+    console.log('🔗 Public URL:', publicUrl);
+
+    return publicUrl;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    return null;
   }
 }

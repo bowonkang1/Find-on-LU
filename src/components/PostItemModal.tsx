@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
-import { createThriftItem, createLostFoundItem } from "../lib/supabaseService";
+import { createThriftItem, createLostFoundItem, uploadItemImage } from "../lib/supabaseService";
 
 interface PostItemModalProps {
   isOpen: boolean; // Controls if modal shows or hides
@@ -43,6 +43,14 @@ export function PostItemModal({
 
     try {
       let savedItem;
+      let imageUrl: string | undefined = undefined;
+
+      //upload image first if exists
+      if(formData.image){
+        console.log('uploading image');
+        imageUrl = await uploadItemImage(formData.image) || undefined;
+        console.log('✅ Image uploaded:', imageUrl);
+      }
 
       if (type === "thrift") {
         savedItem = await createThriftItem({
@@ -51,6 +59,7 @@ export function PostItemModal({
           price: parseFloat(formData.price),
           category: formData.category || "Other",
           condition: formData.condition,
+          image_url: imageUrl
         });
       } else {
         savedItem = await createLostFoundItem({
@@ -59,6 +68,7 @@ export function PostItemModal({
           type: formData.itemType as "lost" | "found",
           location: formData.location,
           date: new Date().toISOString().split("T")[0],
+          image_url: imageUrl
         });
       }
       alert("Item posted successfully!");
