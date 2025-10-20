@@ -7,6 +7,7 @@ import { AuthForm } from './components/auth/AuthForm';
 import { DashboardPage } from './pages/DashboardPage';
 import { LostFoundPage } from './pages/LostFoundPage';
 import { ThriftPage } from './pages/ThriftPage';
+import { MyPostsPage } from './pages/MyPostsPage';
 
 //impors all the components app needs to assemble application
 interface User {
@@ -81,6 +82,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/lost-found" element={<LostFoundPage />} />
           <Route path="/thrift" element={<ThriftPage />} />
+          <Route path="/my-posts" element={<MyPostsPage />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Layout>

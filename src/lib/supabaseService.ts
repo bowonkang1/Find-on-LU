@@ -49,6 +49,7 @@ export async function createThriftItem(item: {
   return data[0];
 }
 
+//for mark as sold
 export async function updateThriftItem(id: string, updates: {
   title?: string;
   description?: string;
@@ -134,6 +135,7 @@ export async function createLostFoundItem(item: {
   return data[0];
 }
 
+//update item(for mark as resolved)
 export async function updateLostFoundItem(id: string, updates: {
   title?: string;
   description?: string;
@@ -203,4 +205,42 @@ export async function uploadItemImage(file: File): Promise<string | null> {
     console.error('Error uploading image:', error);
     return null;
   }
+}
+
+// ==================== GET USER'S OWN POSTS ====================
+
+export async function getMyThriftItems() {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('thrift_items')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Error fetching my thrift items:', error);
+    throw error;
+  }
+  return data;
+}
+
+export async function getMyLostFoundItems() {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) throw new Error('Not authenticated');
+  
+  const { data, error } = await supabase
+    .from('lost_found_items')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Error fetching my lost/found items:', error);
+    throw error;
+  }
+  return data;
 }
