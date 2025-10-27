@@ -68,9 +68,16 @@ function App() {
 
   if (!user) { //if user is not logged in , show the log in form is they can log in
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
-        <AuthForm />
-      </div>
+      <Router>
+        <Routes>
+          <Route path="/login" element={
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
+              <AuthForm />
+            </div>
+          } />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Router>
     );
   }
 

@@ -1,31 +1,31 @@
-import React, { useState } from 'react';
-import { supabase } from '../../lib/supabase';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
+import React, { useState } from "react";
+import { supabase } from "../../lib/supabase";
+import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
 
-const SCHOOL_DOMAIN = '@lawrence.edu';
+const SCHOOL_DOMAIN = "@lawrence.edu";
 
 export function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
   //True->sign in, False->Sign up
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const validateEmail = (email: string) => {
     if (!email.endsWith(SCHOOL_DOMAIN)) {
       return `Please use your Lawrence email ending with ${SCHOOL_DOMAIN}`;
     }
-    return '';
+    return "";
   };
 
-  const handleSubmit = async (e: React.FormEvent) => { 
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     // Validate school email
     const emailError = validateEmail(email);
@@ -36,13 +36,13 @@ export function AuthForm() {
 
     // Validate password
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters");
       return;
     }
 
     // Check password match for sign up
     if (!isLogin && password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
@@ -56,7 +56,6 @@ export function AuthForm() {
           password,
         });
         if (error) throw error;
-
       } else {
         // Sign Up
         const { error } = await supabase.auth.signUp({
@@ -64,18 +63,18 @@ export function AuthForm() {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
-          }
+          },
         });
 
         if (error) throw error;
 
-        setMessage('🎉 Check your email to confirm your account!');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
+        setMessage("🎉 Check your email to confirm your account!");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
       }
     } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.');
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -86,15 +85,25 @@ export function AuthForm() {
       {/* Header */}
       <div className="text-center mb-6">
         <div className="mx-auto w-16 h-16 bg-lu-blue-600 rounded-2xl flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <svg
+            className="w-8 h-8 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
           </svg>
         </div>
         <h1 className="text-2xl font-bold text-gray-900">
-          {isLogin ? 'Welcome to Find On LU' : 'Join Find On LU'}
+          {isLogin ? "Welcome to Find On LU" : "Join Find On LU"}
         </h1>
         <p className="text-gray-600 mt-2">
-          {isLogin ? 'Sign in to your account' : 'Create your account'}
+          {isLogin ? "Sign in to your account" : "Create your account"}
         </p>
       </div>
 
@@ -104,13 +113,13 @@ export function AuthForm() {
           type="button"
           onClick={() => {
             setIsLogin(true);
-            setError('');
-            setMessage('');
+            setError("");
+            setMessage("");
           }}
           className={`flex-1 py-2 rounded-md font-medium transition-colors ${
             isLogin
-              ? 'bg-white text-lu-blue-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
+              ? "bg-white text-lu-blue-600 shadow-sm"
+              : "text-gray-600 hover:text-gray-900"
           }`}
         >
           Sign In
@@ -119,13 +128,13 @@ export function AuthForm() {
           type="button"
           onClick={() => {
             setIsLogin(false);
-            setError('');
-            setMessage('');
+            setError("");
+            setMessage("");
           }}
           className={`flex-1 py-2 rounded-md font-medium transition-colors ${
             !isLogin
-              ? 'bg-white text-lu-blue-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
+              ? "bg-white text-lu-blue-600 shadow-sm"
+              : "text-gray-600 hover:text-gray-900"
           }`}
         >
           Sign Up
@@ -148,7 +157,7 @@ export function AuthForm() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder={isLogin ? 'Your password' : 'Minimum 6 characters'}
+          placeholder={isLogin ? "Your password" : "Minimum 6 characters"}
           required
         />
 
@@ -176,13 +185,14 @@ export function AuthForm() {
         )}
 
         <Button type="submit" disabled={loading} className="w-full">
-          {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Create Account'}
+          {loading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
         </Button>
       </form>
 
       {!isLogin && (
         <p className="mt-4 text-xs text-gray-500 text-center">
-          By signing up, you'll receive a confirmation email at your Lawrence address.
+          By signing up, you'll receive a confirmation email at your Lawrence
+          address.
         </p>
       )}
     </div>
