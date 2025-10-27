@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "../components/ui/Button";
 import { PostItemModal } from "../components/PostItemModal";
 import { ItemDetailsModal } from "../components/ItemDetailsModal";
-import { getThriftItems } from '../lib/supabaseService';
+import { getThriftItems } from "../lib/supabaseService";
 
 interface ThriftItem {
   id: string; // uuid in Supabase
@@ -25,7 +25,7 @@ export function ThriftPage() {
   const [selectedItem, setSelectedItem] = useState<ThriftItem | null>(null);
   const [items, setItems] = useState<ThriftItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Fetch items from Supabase when page loads
   useEffect(() => {
@@ -37,10 +37,10 @@ export function ThriftPage() {
       setLoading(true);
       const data = await getThriftItems();
       setItems(data || []);
-      setError('');
+      setError("");
     } catch (err: any) {
-      console.error('Error loading items:', err);
-      setError('Failed to load items. Please try again.');
+      console.error("Error loading items:", err);
+      setError("Failed to load items. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,8 @@ export function ThriftPage() {
     const matchesSearch =
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
+    const matchesCategory =
+      selectedCategory === "all" || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -78,7 +79,9 @@ export function ThriftPage() {
         <div className="bg-red-100 text-red-700 p-4 rounded-lg">
           <p className="font-semibold">Error</p>
           <p>{error}</p>
-          <Button onClick={loadItems} className="mt-4">Try Again</Button>
+          <Button onClick={loadItems} className="mt-4">
+            Try Again
+          </Button>
         </div>
       </div>
     );
@@ -89,9 +92,7 @@ export function ThriftPage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Thrift Store</h1>
-          <p className="text-gray-600 mt-2">
-            Buy and sell pre-loved items
-          </p>
+          <p className="text-gray-600 mt-2">Buy and sell pre-loved items</p>
         </div>
         <Button onClick={() => setIsModalOpen(true)}>Post Item</Button>
       </div>
@@ -125,42 +126,20 @@ export function ThriftPage() {
               </p>
             )}
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant={selectedCategory === "all" ? "primary" : "outline"}
-              onClick={() => setSelectedCategory("all")}
-              size="sm"
+          <div className="mb-6">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lu-blue-500 focus:border-lu-blue-500"
             >
-              All
-            </Button>
-            <Button
-              variant={selectedCategory === "Electronics" ? "primary" : "outline"}
-              onClick={() => setSelectedCategory("Electronics")}
-              size="sm"
-            >
-              Electronics
-            </Button>
-            <Button
-              variant={selectedCategory === "Clothing" ? "primary" : "outline"}
-              onClick={() => setSelectedCategory("Clothing")}
-              size="sm"
-            >
-              Clothing
-            </Button>
-            <Button
-              variant={selectedCategory === "Books" ? "primary" : "outline"}
-              onClick={() => setSelectedCategory("Books")}
-              size="sm"
-            >
-              Books
-            </Button>
-            <Button
-              variant={selectedCategory === "Furniture" ? "primary" : "outline"}
-              onClick={() => setSelectedCategory("Furniture")}
-              size="sm"
-            >
-              Furniture
-            </Button>
+              <option value="all">All Categories</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Furniture">Furniture</option>
+              <option value="Clothing">Clothing</option>
+              <option value="Books">Books</option>
+              <option value="Sports">Sports & Outdoors</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
         </div>
       </div>
@@ -200,8 +179,12 @@ export function ThriftPage() {
             </div>
 
             <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
-            <p className="text-2xl font-bold text-green-600 mb-2">${item.price}</p>
-            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
+            <p className="text-2xl font-bold text-green-600 mb-2">
+              ${item.price}
+            </p>
+            <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+              {item.description}
+            </p>
 
             <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
               {item.condition && <span>{item.condition}</span>}
@@ -209,7 +192,7 @@ export function ThriftPage() {
             </div>
 
             <div className="text-sm text-gray-500 mb-4">
-              <div>Posted by: {item.user_email.split('@')[0]}</div>
+              <div>Posted by: {item.user_email.split("@")[0]}</div>
             </div>
 
             <Button
@@ -217,7 +200,7 @@ export function ThriftPage() {
               className="w-full"
               onClick={(e) => {
                 e.stopPropagation();
-                const posterName = item.user_email.split('@')[0];
+                const posterName = item.user_email.split("@")[0];
                 const subject = `Interested in: ${item.title}`;
                 const body = `Hi ${posterName},\n\nI'm interested in your item "${item.title}" listed for $${item.price}.\n\nIs this still available?\n\nThanks!`;
                 const outlookUrl = `https://outlook.office365.com/mail/deeplink/compose?to=${
