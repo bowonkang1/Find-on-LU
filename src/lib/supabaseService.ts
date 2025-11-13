@@ -49,28 +49,6 @@ export async function createThriftItem(item: {
   return data[0];
 }
 
-//for mark as sold
-export async function updateThriftItem(id: string, updates: {
-  title?: string;
-  description?: string;
-  price?: number;
-  category?: string;
-  condition?: string;
-  status?: string;
-}) {
-  const { data, error } = await supabase
-    .from('thrift_items')
-    .update(updates)
-    .eq('id', id)
-    .select();
-  
-  if (error) {
-    console.error('Error updating thrift item:', error);
-    throw error;
-  }
-  return data[0];
-}
-
 export async function deleteThriftItem(id: string) {
   const { error } = await supabase
     .from('thrift_items')
@@ -135,27 +113,6 @@ export async function createLostFoundItem(item: {
   return data[0];
 }
 
-//update item(for mark as resolved)
-export async function updateLostFoundItem(id: string, updates: {
-  title?: string;
-  description?: string;
-  type?: 'lost' | 'found';
-  location?: string;
-  date?: string;
-  status?: string;
-}) {
-  const { data, error } = await supabase
-    .from('lost_found_items')
-    .update(updates)
-    .eq('id', id)
-    .select();
-  
-  if (error) {
-    console.error('Error updating lost/found item:', error);
-    throw error;
-  }
-  return data[0];
-}
 
 export async function deleteLostFoundItem(id: string) {
   const { error } = await supabase
@@ -242,5 +199,45 @@ export async function getMyLostFoundItems() {
     console.error('Error fetching my lost/found items:', error);
     throw error;
   }
+  return data;
+}
+
+// Update Thrift Item
+export async function updateThriftItem(id: string, updates: Partial<{//partial-> all fields are optional
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  condition: string;
+  image_url?: string;
+}>) {
+  const { data, error } = await supabase //destructuring(extracts properties from object) 
+    .from('thrift_items') //thrift_items table
+    .update(updates) //the object we passed(what to update)
+    .eq('id', id) // only update the row where id matches
+    .select() //return the updated row
+    .single(); //return as a single object
+
+  if (error) throw error; // If update failed, throw error
+  return data; //If success, return the updated item
+}
+
+// Update Lost & Found Item
+export async function updateLostFoundItem(id: string, updates: Partial<{
+  title: string;
+  description: string;
+  location: string;
+  date: string;
+  type: 'lost' | 'found';
+  image_url?: string;
+}>) {
+  const { data, error } = await supabase
+    .from('lost_found_items')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
   return data;
 }

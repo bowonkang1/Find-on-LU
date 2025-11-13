@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
+import { useNavigate } from "react-router-dom"; 
 
 const SCHOOL_DOMAIN = "@lawrence.edu";
 
@@ -14,6 +15,7 @@ export function AuthForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
     if (!email.endsWith(SCHOOL_DOMAIN)) {
@@ -26,6 +28,8 @@ export function AuthForm() {
     e.preventDefault();
     setError("");
     setMessage("");
+
+    
 
     // Validate school email
     const emailError = validateEmail(email);
@@ -56,6 +60,7 @@ export function AuthForm() {
           password,
         });
         if (error) throw error;
+        navigate('/dashboard');
       } else {
         // Sign Up
         const { error } = await supabase.auth.signUp({
